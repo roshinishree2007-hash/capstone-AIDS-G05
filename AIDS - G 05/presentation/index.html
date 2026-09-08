@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Lab GPU & Workstation Reservation System - Capstone Presentation</title>
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --card-bg: rgba(17, 24, 39, 0.85);
+      --border-color: rgba(255, 255, 255, 0.1);
+      --accent-indigo: #6366f1;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Top Progress Bar */
+    .progress-track {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.08);
+      z-index: 100;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 12.5%;
+      background: linear-gradient(90deg, var(--accent-indigo), var(--accent-cyan));
+      transition: width 0.3s ease;
+    }
+
+    /* Header Nav */
+    header {
+      padding: 1.2rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      background: rgba(11, 15, 25, 0.9);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .brand-tag {
+      background: linear-gradient(135deg, var(--accent-indigo), var(--accent-cyan));
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .slide-counter-pill {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 0.35rem 0.85rem;
+      border-radius: 20px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* Presentation Deck Container */
+    .slide-stage {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem;
+      position: relative;
+    }
+
+    .slide {
+      display: none;
+      width: 100%;
+      max-width: 1100px;
+      animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .slide.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.99);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* Slide Typography */
+    .slide-tag {
+      color: var(--accent-cyan);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+
+    .slide-title {
+      font-size: 2.3rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.2rem;
+      background: linear-gradient(135deg, #ffffff 40%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .slide-subtitle {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    /* Cards & Grid Containers */
+    .deck-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .deck-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.2rem;
+      margin-top: 1.5rem;
+    }
+
+    .deck-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .deck-card.highlight {
+      border-color: rgba(99, 102, 241, 0.4);
+      box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.3);
+    }
+
+    .deck-card h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .deck-card p,
+    .deck-card li {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .deck-card ul {
+      padding-left: 1.2rem;
+      margin-top: 0.5rem;
+    }
+
+    .deck-card li {
+      margin-bottom: 0.4rem;
+    }
+
+    /* Visual Architecture Diagram Box */
+    .arch-container {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 1.5rem;
+      margin-top: 1.2rem;
+    }
+
+    .tier-box {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .tier-title {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tier-chips span {
+      background: rgba(99, 102, 241, 0.15);
+      color: #818cf8;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      margin-left: 0.35rem;
+    }
+
+    /* Bottom Control Bar */
+    footer {
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(11, 15, 25, 0.9);
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .btn-slide {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-color);
+      color: #ffffff;
+      padding: 0.5rem 1.15rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-slide:hover:not(:disabled) {
+      background: var(--accent-indigo);
+      border-color: var(--accent-indigo);
+    }
+
+    .btn-slide:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .keyboard-hint {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    kbd {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      padding: 0.15rem 0.4rem;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .slide-title {
+        font-size: 1.65rem;
+      }
+
+      .slide-subtitle {
+        font-size: 0.95rem;
+      }
+
+      .deck-grid-2,
+      .deck-grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      .keyboard-hint {
+        display: none;
+      }
+
+      header,
+      footer {
+        padding: 0.85rem 1rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Progress Bar -->
+  <div class="progress-track">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+
+  <!-- Top Header -->
+  <header>
+    <div class="brand">
+      <span class="brand-tag"><i class="bi bi-mortarboard-fill me-1"></i> CAPSTONE</span>
+      <span>AI Lab Workstation Reservation System</span>
+    </div>
+    <div class="slide-counter-pill" id="slide-counter">Slide 1 / 8</div>
+  </header>
+
+  <!-- Slide Stage -->
+  <main class="slide-stage">
+
+    <!-- SLIDE 1: TITLE -->
+    <section class="slide active" data-slide="1">
+      <div class="slide-tag">Capstone Technical Defense</div>
+      <h1 class="slide-title" style="font-size: 2.8rem; margin-bottom: 1rem;">
+        AI Lab GPU & Workstation Time-Slot Reservation System
+      </h1>
+      <p class="slide-subtitle" style="max-width: 800px; font-size: 1.25rem;">
+        A high-concurrency 3-tier web platform engineered for fair allocation, transparent scheduling, and conflict-free
+        usage of enterprise deep learning hardware.
+      </p>
+
+      <div class="deck-grid-3" style="margin-top: 2rem;">
+        <div class="deck-card highlight">
+          <h3><i class="bi bi-laptop text-primary"></i> Presentation Tier</h3>
+          <p>HTML5, CSS3, Bootstrap 5, Modern Vanilla JavaScript, and Fetch API with mobile & desktop responsive design.
+          </p>
+        </div>
+        <div class="deck-card highlight">
+          <h3><i class="bi bi-gear-fill text-info"></i> Application Tier</h3>
+          <p>Java 17+ with Spring Boot 3, Spring Web, Spring Data JPA, RESTful APIs, and global error handling.</p>
+        </div>
+        <div class="deck-card highlight">
+          <h3><i class="bi bi-database-fill text-success"></i> Data Tier</h3>
+          <p>MySQL 8.0 with relational constraints, indexed time-range queries, and ACID transactional integrity.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 2: PROBLEM STATEMENT -->
+    <section class="slide" data-slide="2">
+      <div class="slide-tag">Phase 1 &bull; Define</div>
+      <h2 class="slide-title">Problem Statement & Research Context</h2>
+      <p class="slide-subtitle">
+        High-performance compute clusters (NVIDIA RTX 4090, A100, H100) are scarce academic resources required for
+        training compute-heavy deep learning models.
+      </p>
+
+      <div class="deck-grid-2">
+        <div class="deck-card" style="border-left: 4px solid var(--accent-rose);">
+          <h3 class="text-danger"><i class="bi bi-x-octagon me-2"></i>Current Lab Dilemma</h3>
+          <ul>
+            <li><strong>Severe Resource Bottlenecks:</strong> Students compete ad-hoc for 20 high-end workstations
+              without a queue.</li>
+            <li><strong>Frequent Overlaps & Double Bookings:</strong> Manual logbooks cause students to clash over the
+              same machine.</li>
+            <li><strong>Zero Availability Transparency:</strong> Students arrive at the lab only to find all GPUs
+              occupied by overnight training runs.</li>
+            <li><strong>Unfair Usage Monopolies:</strong> Single users hoard GPUs for days, preventing others from
+              completing coursework.</li>
+          </ul>
+        </div>
+
+        <div class="deck-card" style="border-left: 4px solid var(--accent-emerald);">
+          <h3 class="text-success"><i class="bi bi-check-circle me-2"></i>Engineered Solution</h3>
+          <ul>
+            <li><strong>Real-Time Availability Grid:</strong> Live visual status of all 20 GPU workstations (Available,
+              Reserved, In-Use, Maintenance).</li>
+            <li><strong>Strict Fair-Share Governance:</strong> Maximum 2-hour slots with 1 active reservation per
+              student per day policy.</li>
+            <li><strong>Atomic Conflict Detection:</strong> Microsecond JPQL interval overlap validation rejects
+              concurrent bookings.</li>
+            <li><strong>Lab Assistant Verification Desk:</strong> Controlled check-in and GPU release lifecycle
+              workflows.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 3: PERSONAS & USER STORIES -->
+    <section class="slide" data-slide="3">
+      <div class="slide-tag">Phase 1 &bull; Stakeholders</div>
+      <h2 class="slide-title">Personas & Key User Stories</h2>
+      <p class="slide-subtitle">Designed around the distinct workflows of AI students and lab administrative staff.</p>
+
+      <div class="deck-grid-2">
+        <div class="deck-card">
+          <h3><i class="bi bi-mortarboard text-primary"></i> Persona 1: AI / Research Student</h3>
+          <p class="small text-secondary mb-2"><strong>Goal:</strong> Train PyTorch/TensorFlow models without schedule
+            clashes.</p>
+          <ul>
+            <li><em>"As an AI student, I want to inspect GPU specs so that I can choose between an RTX 4090 and an A100
+                for LLM training."</em></li>
+            <li><em>"As a student, I want to reserve a 2-hour slot so that I have guaranteed compute time for my
+                project."</em></li>
+            <li><em>"As a student, I want instant rejection of conflicting slots so that double bookings are
+                impossible."</em></li>
+          </ul>
+        </div>
+
+        <div class="deck-card">
+          <h3><i class="bi bi-shield-lock text-warning"></i> Persona 2: AI Lab Assistant</h3>
+          <p class="small text-secondary mb-2"><strong>Goal:</strong> Verify student physical attendance and cycle
+            hardware availability.</p>
+          <ul>
+            <li><em>"As a lab assistant, I want to check in students upon lab entry so that reserved machines transition
+                to IN_USE."</em></li>
+            <li><em>"As a lab assistant, I want to release completed sessions so that idle GPUs are immediately freed to
+                AVAILABLE."</em></li>
+            <li><em>"As a lab assistant, I want to place damaged nodes into MAINTENANCE mode to prevent invalid
+                bookings."</em></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 4: ARCHITECTURE -->
+    <section class="slide" data-slide="4">
+      <div class="slide-tag">Phase 2 &bull; Design</div>
+      <h2 class="slide-title">3-Tier Enterprise Architecture</h2>
+      <p class="slide-subtitle">Clear decoupling of presentation, business logic, and persistence layers.</p>
+
+      <div class="arch-container">
+        <!-- Tier 1 -->
+        <div class="tier-box">
+          <div class="tier-title">
+            <i class="bi bi-browser-chrome text-primary"></i>
+            <div>
+              <strong>Tier 1 &bull; Presentation Layer (Client)</strong>
+              <div class="small text-muted">Runs on port 5500 &bull; Responsive for Laptop & Mobile</div>
+            </div>
+          </div>
+          <div class="tier-chips">
+            <span>HTML5</span>
+            <span>Bootstrap 5</span>
+            <span>Vanilla JS (ES6+)</span>
+            <span>Fetch API</span>
+          </div>
+        </div>
+
+        <!-- Connection 1 -->
+        <div class="text-center text-muted my-1" style="font-size: 0.9rem;">
+          <i class="bi bi-arrow-down-up text-primary"></i> JSON REST Requests & Responses &bull; CORS Configured
+        </div>
+
+        <!-- Tier 2 -->
+        <div class="tier-box">
+          <div class="tier-title">
+            <i class="bi bi-cpu-fill text-info"></i>
+            <div>
+              <strong>Tier 2 &bull; Application Layer (Spring Boot 3)</strong>
+              <div class="small text-muted">Runs on port 8080 &bull; REST Controllers, Services, DTOs & Validation</div>
+            </div>
+          </div>
+          <div class="tier-chips">
+            <span>Java 17+</span>
+            <span>Spring Boot 3.2</span>
+            <span>Spring Web</span>
+            <span>Spring Data JPA</span>
+          </div>
+        </div>
+
+        <!-- Connection 2 -->
+        <div class="text-center text-muted my-1" style="font-size: 0.9rem;">
+          <i class="bi bi-arrow-down-up text-info"></i> JDBC / HikariCP Pool &bull; Hibernate ORM
+        </div>
+
+        <!-- Tier 3 -->
+        <div class="tier-box">
+          <div class="tier-title">
+            <i class="bi bi-database-fill text-success"></i>
+            <div>
+              <strong>Tier 3 &bull; Persistence Layer (MySQL 8.0)</strong>
+              <div class="small text-muted">Runs on port 3306 &bull; Relational Schema `ai_lab_reservation`</div>
+            </div>
+          </div>
+          <div class="tier-chips">
+            <span>MySQL 8.0</span>
+            <span>InnoDB Engine</span>
+            <span>Foreign Keys</span>
+            <span>Composite Indices</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 5: DATABASE DESIGN -->
+    <section class="slide" data-slide="5">
+      <div class="slide-tag">Phase 2 &bull; Data Tier</div>
+      <h2 class="slide-title">Relational Schema & 20 Workstation Fleet</h2>
+      <p class="slide-subtitle">Normalized 3NF relational data model enforcing referential integrity and zero data
+        anomalies.</p>
+
+      <div class="deck-grid-3">
+        <div class="deck-card">
+          <h3 class="text-primary"><i class="bi bi-table me-1"></i> students</h3>
+          <p class="small text-secondary mb-2">Stores student profiles and contact info.</p>
+          <ul class="font-monospace small">
+            <li><strong>id</strong> (BIGINT, PK, Auto-Inc)</li>
+            <li>roll_number (VARCHAR 30, UNIQUE)</li>
+            <li>full_name (VARCHAR 100)</li>
+            <li>email (VARCHAR 100, UNIQUE)</li>
+            <li>department (VARCHAR 50)</li>
+            <li>created_at (TIMESTAMP)</li>
+          </ul>
+        </div>
+
+        <div class="deck-card">
+          <h3 class="text-info"><i class="bi bi-table me-1"></i> workstations</h3>
+          <p class="small text-secondary mb-2">20 seeded GPU workstations with full hardware specs.</p>
+          <ul class="font-monospace small">
+            <li><strong>id</strong> (BIGINT, PK, Auto-Inc)</li>
+            <li>workstation_code (VARCHAR 20, UNIQUE)</li>
+            <li>gpu_model (VARCHAR 80)</li>
+            <li>vram_gb (INT) & RAM (INT)</li>
+            <li>status (AVAILABLE | RESERVED | ...)</li>
+            <li>lab_location (VARCHAR 80)</li>
+          </ul>
+        </div>
+
+        <div class="deck-card">
+          <h3 class="text-success"><i class="bi bi-table me-1"></i> lab_bookings</h3>
+          <p class="small text-secondary mb-2">Time-slot reservations with lifecycle timestamps.</p>
+          <ul class="font-monospace small">
+            <li><strong>id</strong> (BIGINT, PK, Auto-Inc)</li>
+            <li>student_id (FK &rarr; students.id)</li>
+            <li>workstation_id (FK &rarr; workstations.id)</li>
+            <li>booking_date, start_time, end_time</li>
+            <li>status (CONFIRMED | IN_USE | ...)</li>
+            <li>checked_in_at, released_at</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 6: REST API & BUSINESS RULES -->
+    <section class="slide" data-slide="6">
+      <div class="slide-tag">Phase 2 &bull; API Contract</div>
+      <h2 class="slide-title">REST API Endpoints & Business Rule Engine</h2>
+      <p class="slide-subtitle">Standardized HTTP verb conventions, unified JSON error responses, and deterministic
+        validation.</p>
+
+      <div class="deck-grid-2">
+        <div class="deck-card">
+          <h3><i class="bi bi-signpost-2 text-primary"></i> Core REST Endpoints</h3>
+          <ul class="font-monospace small">
+            <li><span class="text-success fw-bold">GET</span> /api/workstations &bull; List all 20 units</li>
+            <li><span class="text-success fw-bold">GET</span> /api/workstations/{id} &bull; Spec details</li>
+            <li><span class="text-primary fw-bold">POST</span> /api/bookings &bull; Create reservation</li>
+            <li><span class="text-success fw-bold">GET</span> /api/bookings &bull; List all bookings</li>
+            <li><span class="text-warning fw-bold">PUT</span> /api/bookings/{id}/checkin &bull; Assistant check-in</li>
+            <li><span class="text-warning fw-bold">PUT</span> /api/bookings/{id}/release &bull; Complete & free GPU</li>
+            <li><span class="text-danger fw-bold">DELETE</span> /api/bookings/{id} &bull; Cancel reservation</li>
+            <li><span class="text-warning fw-bold">PUT</span> /api/workstations/{id}/status &bull; Maintenance</li>
+          </ul>
+        </div>
+
+        <div class="deck-card">
+          <h3><i class="bi bi-shield-check text-success"></i> 10 Automated Business Rules</h3>
+          <ul class="small">
+            <li><strong>Rule 1:</strong> Duration capped at maximum 2 hours (120 mins).</li>
+            <li><strong>Rule 2:</strong> Max 1 active booking per student per calendar day.</li>
+            <li><strong>Rule 3:</strong> Overlap validation: <code>startA &lt; endB AND endA &gt; startB</code>.</li>
+            <li><strong>Rule 4:</strong> Unavailable / Maintenance machines cannot be booked.</li>
+            <li><strong>Rule 5:</strong> Start time must be strictly before end time.</li>
+            <li><strong>Rule 7 & 8:</strong> Controlled Check-In (IN_USE) and Release (COMPLETED &rarr; AVAILABLE).</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 7: WORKING DEMO & USER FLOW -->
+    <section class="slide" data-slide="7">
+      <div class="slide-tag">Phase 3 &bull; Implementation</div>
+      <h2 class="slide-title">End-to-End System Workflow</h2>
+      <p class="slide-subtitle">From reservation booking to laboratory checkout.</p>
+
+      <div class="deck-grid-3">
+        <div class="deck-card">
+          <div class="badge bg-primary mb-2">Step 1</div>
+          <h3><i class="bi bi-search"></i> Discovery</h3>
+          <p>Student accesses portal, filters 20 workstations by GPU model (e.g. RTX 4090 or A100), and inspects
+            available VRAM/RAM specs.</p>
+        </div>
+
+        <div class="deck-card">
+          <div class="badge bg-info text-dark mb-2">Step 2</div>
+          <h3><i class="bi bi-calendar-plus"></i> Slot Booking</h3>
+          <p>Student enters roll number, date, time (max 2 hours), and project details. Backend validates conflict rules
+            atomically.</p>
+        </div>
+
+        <div class="deck-card">
+          <div class="badge bg-success mb-2">Step 3</div>
+          <h3><i class="bi bi-check2-circle"></i> Lab Execution</h3>
+          <p>Lab assistant checks in student at desk (marks IN_USE). When training finishes, assistant releases node,
+            freeing GPU for the next student.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 8: CONCLUSION & FUTURE ENHANCEMENTS -->
+    <section class="slide" data-slide="8">
+      <div class="slide-tag">Phase 4 &bull; Conclusion</div>
+      <h2 class="slide-title">Conclusion & Future Roadmap</h2>
+      <p class="slide-subtitle">Summary of capstone achievements and potential enterprise upgrades.</p>
+
+      <div class="deck-grid-2">
+        <div class="deck-card">
+          <h3 class="text-success"><i class="bi bi-trophy me-2"></i>Capstone Achievements</h3>
+          <ul>
+            <li>Zero frontend framework bloat; ultra-fast Vanilla JS & Bootstrap 5.</li>
+            <li>Enterprise-ready Spring Boot 3 architecture adhering to clean SOLID patterns.</li>
+            <li>Full conflict detection eliminating double bookings in the AI lab.</li>
+            <li>Dual-view UX catering to both Students and Lab Assistants.</li>
+            <li>1-click automated batch runner for seamless Windows startup.</li>
+          </ul>
+        </div>
+
+        <div class="deck-card">
+          <h3 class="text-info"><i class="bi bi-rocket-takeoff me-2"></i>Future Roadmap</h3>
+          <ul>
+            <li><strong>Automated Waitlist Queue:</strong> Dynamic waitlisting that auto-allocates freed slots.</li>
+            <li><strong>Hardware Telemetry Integration:</strong> NVIDIA NVML API integration for live VRAM and
+              temperature metrics.</li>
+            <li><strong>Institutional Single Sign-On (SSO):</strong> SAML 2.0 / OAuth2 university login integration.
+            </li>
+            <li><strong>Automated SSH/Jupyter Provisioning:</strong> Instant Docker container spin-up upon check-in.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Controls -->
+  <footer>
+    <div class="keyboard-hint">
+      Use <kbd>&larr;</kbd> <kbd>&rarr;</kbd> or click buttons to navigate
+    </div>
+    <div class="nav-buttons">
+      <button class="btn-slide" id="btn-prev" disabled>
+        <i class="bi bi-arrow-left"></i> Previous
+      </button>
+      <button class="btn-slide" id="btn-next">
+        Next <i class="bi bi-arrow-right"></i>
+      </button>
+    </div>
+  </footer>
+
+  <!-- Slide Logic -->
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    let currentSlide = 1;
+
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
+    const slideCounter = document.getElementById('slide-counter');
+    const progressBar = document.getElementById('progress-bar');
+
+    function goToSlide(n) {
+      if (n < 1 || n > totalSlides) return;
+      slides.forEach(s => s.classList.remove('active'));
+      currentSlide = n;
+
+      const target = document.querySelector(`.slide[data-slide="${currentSlide}"]`);
+      if (target) target.classList.add('active');
+
+      // Update UI
+      slideCounter.textContent = `Slide ${currentSlide} / ${totalSlides}`;
+      progressBar.style.width = `${(currentSlide / totalSlides) * 100}%`;
+
+      btnPrev.disabled = currentSlide === 1;
+      btnNext.disabled = currentSlide === totalSlides;
+    }
+
+    btnPrev.addEventListener('click', () => goToSlide(currentSlide - 1));
+    btnNext.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+        goToSlide(currentSlide + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        goToSlide(currentSlide - 1);
+      }
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI Lab GPU & Workstation Time-Slot Reservation System. High-performance compute scheduling for deep learning models.">
+  <title>AI Lab GPU & Workstation Reservation System</title>
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Top Desktop Navigation Bar -->
+  <nav class="navbar navbar-custom sticky-top">
+    <div class="container-fluid px-lg-4">
+      <div class="d-flex align-items-center gap-2">
+        <span class="brand-badge"><i class="bi bi-gpu-card me-1"></i> AI LAB</span>
+        <span class="brand-title d-none d-md-inline">GPU & Workstation Scheduler</span>
+      </div>
+
+      <!-- Center Desktop Navigation Tabs -->
+      <div class="desktop-nav-pills d-none d-lg-flex" role="tablist">
+        <button class="nav-pill-btn active" data-target="fleet">
+          <i class="bi bi-grid-3x3-gap"></i> Workstations Fleet
+        </button>
+        <button class="nav-pill-btn" data-target="reserve">
+          <i class="bi bi-calendar-plus"></i> Reserve Workstation
+        </button>
+        <button class="nav-pill-btn" data-target="bookings">
+          <i class="bi bi-journal-text"></i> Active Queue
+        </button>
+        <button class="nav-pill-btn" data-target="assistant">
+          <i class="bi bi-shield-check"></i> Lab Assistant Desk
+        </button>
+      </div>
+
+      <!-- Right: System Status -->
+      <div class="d-flex align-items-center gap-2">
+        <div id="backend-status-pill" class="system-status-pill" title="Backend Status">
+          <span class="status-indicator-dot"></span>
+          <span id="backend-status-text">Connecting...</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="mobile-bottom-nav d-lg-none">
+    <button class="mobile-nav-item active" data-target="fleet">
+      <i class="bi bi-grid-3x3-gap"></i>
+      <span>Fleet</span>
+    </button>
+    <button class="mobile-nav-item" data-target="reserve">
+      <i class="bi bi-calendar-plus"></i>
+      <span>Reserve</span>
+    </button>
+    <button class="mobile-nav-item" data-target="bookings">
+      <i class="bi bi-journal-text"></i>
+      <span>Queue</span>
+    </button>
+    <button class="mobile-nav-item" data-target="assistant">
+      <i class="bi bi-shield-check"></i>
+      <span>Staff</span>
+    </button>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="container-fluid px-lg-4 py-3">
+
+    <!-- ====================================================================
+         SECTION 1: WORKSTATIONS FLEET & LIVE STATUS
+         ==================================================================== -->
+    <section id="section-fleet" class="app-section">
+      <!-- Section Banner -->
+      <div class="section-banner mb-3">
+        <div class="row align-items-center g-3">
+          <div class="col-lg-8">
+            <h1 class="page-title">AI Lab GPU & Workstation Fleet</h1>
+            <p class="page-subtitle">
+              Monitor real-time availability across 20 high-performance deep learning workstations. Select any available node to begin reservation.
+            </p>
+          </div>
+          <div class="col-lg-4 text-lg-end">
+            <button class="btn btn-primary-custom" onclick="navigateToSection('reserve')">
+              <i class="bi bi-calendar-plus me-1"></i> Book a Time-Slot
+            </button>
+            <button class="btn btn-outline-custom ms-2" id="btn-refresh-data" title="Refresh Live Data">
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+          <div class="kpi-card">
+            <div class="kpi-label">Total Workstations</div>
+            <div class="kpi-value" id="kpi-total-workstations">20</div>
+            <small class="text-muted"><i class="bi bi-motherboard me-1"></i> Total Capacity</small>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="kpi-card available">
+            <div class="kpi-label">Available GPUs</div>
+            <div class="kpi-value text-success" id="kpi-available-workstations">--</div>
+            <small class="text-muted"><i class="bi bi-check-circle me-1"></i> Ready to Book</small>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="kpi-card reserved">
+            <div class="kpi-label">Reserved Slots</div>
+            <div class="kpi-value text-warning" id="kpi-reserved-workstations">--</div>
+            <small class="text-muted"><i class="bi bi-clock me-1"></i> Upcoming Sessions</small>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="kpi-card in-use">
+            <div class="kpi-label">In-Use Training</div>
+            <div class="kpi-value text-info" id="kpi-in-use-workstations">--</div>
+            <small class="text-muted"><i class="bi bi-cpu me-1"></i> Active Jobs</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search & Filters -->
+      <div class="filter-bar mb-4">
+        <div class="row g-2 align-items-center">
+          <div class="col-12 col-md-4">
+            <div class="input-group">
+              <span class="input-group-text bg-transparent border-end-0 text-muted" style="border-color: rgba(255,255,255,0.18)">
+                <i class="bi bi-search"></i>
+              </span>
+              <input type="text" id="filter-search" class="form-control form-control-dark border-start-0" placeholder="Search by GPU, Code, or Name...">
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <select id="filter-status" class="form-select form-select-dark">
+              <option value="ALL">All Statuses</option>
+              <option value="AVAILABLE">Available Only</option>
+              <option value="RESERVED">Reserved</option>
+              <option value="IN_USE">In Use</option>
+              <option value="MAINTENANCE">Maintenance</option>
+            </select>
+          </div>
+          <div class="col-6 col-md-3">
+            <select id="filter-gpu" class="form-select form-select-dark">
+              <option value="ALL">All GPU Architectures</option>
+              <option value="RTX 4090">NVIDIA GeForce RTX 4090</option>
+              <option value="A100">NVIDIA A100 Tensor Core</option>
+              <option value="H100">NVIDIA H100 PCIe</option>
+              <option value="RTX A6000">NVIDIA RTX A6000</option>
+              <option value="RTX 3090">NVIDIA GeForce RTX 3090</option>
+              <option value="RTX 4080">NVIDIA GeForce RTX 4080</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-2 text-md-end">
+            <span class="badge bg-secondary-subtle text-light border border-secondary px-3 py-2" id="filtered-count-badge">
+              Showing 20 Workstations
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Workstations Grid -->
+      <div class="row g-3" id="workstations-grid-container">
+        <!-- Injected dynamically by app.js -->
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 2: DEDICATED RESERVATION STUDIO (SEPARATE FROM DASHBOARD)
+         ==================================================================== -->
+    <section id="section-reserve" class="app-section d-none">
+      <div class="section-banner mb-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <h1 class="page-title"><i class="bi bi-calendar-plus text-primary me-2"></i>Reserve GPU Workstation</h1>
+            <p class="page-subtitle">Schedule dedicated deep learning compute time. Maximum slot duration is 2 hours.</p>
+          </div>
+          <button class="btn btn-outline-custom btn-sm" onclick="navigateToSection('fleet')">
+            <i class="bi bi-arrow-left me-1"></i> Back to Fleet
+          </button>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <!-- Left: Form -->
+        <div class="col-lg-8">
+          <div class="reservation-studio-card">
+            <form id="reservation-form">
+              <div class="row g-3">
+                <!-- Select Workstation -->
+                <div class="col-12">
+                  <label for="form-workstation" class="form-label small fw-semibold text-secondary">Target Workstation *</label>
+                  <select class="form-select form-select-dark" id="form-workstation" required>
+                    <option value="">-- Choose an Available Workstation --</option>
+                    <!-- Populated dynamically -->
+                  </select>
+                </div>
+
+                <!-- Student Roll Number -->
+                <div class="col-12 col-md-6">
+                  <label for="form-roll-number" class="form-label small fw-semibold text-secondary">Student Roll Number *</label>
+                  <input type="text" class="form-control form-control-dark" id="form-roll-number" placeholder="e.g. AI2024-042" required>
+                </div>
+
+                <!-- Student Name -->
+                <div class="col-12 col-md-6">
+                  <label for="form-student-name" class="form-label small fw-semibold text-secondary">Student Full Name *</label>
+                  <input type="text" class="form-control form-control-dark" id="form-student-name" placeholder="e.g. Priyanshu Sharma" required>
+                </div>
+
+                <!-- Student Email -->
+                <div class="col-12">
+                  <label for="form-email" class="form-label small fw-semibold text-secondary">College Email Address *</label>
+                  <input type="email" class="form-control form-control-dark" id="form-email" placeholder="name@college.edu" required>
+                </div>
+
+                <!-- Booking Date -->
+                <div class="col-12 col-md-4">
+                  <label for="form-booking-date" class="form-label small fw-semibold text-secondary">Reservation Date *</label>
+                  <input type="date" class="form-control form-control-dark" id="form-booking-date" required>
+                </div>
+
+                <!-- Start Time -->
+                <div class="col-6 col-md-4">
+                  <label for="form-start-time" class="form-label small fw-semibold text-secondary">Start Time *</label>
+                  <input type="time" class="form-control form-control-dark" id="form-start-time" required>
+                </div>
+
+                <!-- End Time -->
+                <div class="col-6 col-md-4">
+                  <label for="form-end-time" class="form-label small fw-semibold text-secondary">End Time *</label>
+                  <input type="time" class="form-control form-control-dark" id="form-end-time" required>
+                </div>
+
+                <!-- Duration Tracker Pill -->
+                <div class="col-12">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="duration-meter-pill" id="duration-counter">
+                      <i class="bi bi-stopwatch"></i> Duration: 120 mins (Max 2 Hours)
+                    </span>
+                    <small class="text-muted">Enforced by backend Rule 1</small>
+                  </div>
+                </div>
+
+                <!-- Project Title -->
+                <div class="col-12">
+                  <label for="form-project-title" class="form-label small fw-semibold text-secondary">Research / Project Title *</label>
+                  <input type="text" class="form-control form-control-dark" id="form-project-title" maxlength="150" placeholder="e.g. Distributed LLM Fine-Tuning on Domain Specific Clinical Notes" required>
+                </div>
+
+                <!-- Framework / Model Architecture -->
+                <div class="col-12">
+                  <label for="form-model-framework" class="form-label small fw-semibold text-secondary">Deep Learning Framework & Model *</label>
+                  <input type="text" class="form-control form-control-dark" id="form-model-framework" maxlength="100" placeholder="e.g. PyTorch 2.3 + DeepSpeed ZeRO-3 + HuggingFace Transformers" required>
+                </div>
+              </div>
+
+              <!-- Validation Feedback Alert Box -->
+              <div id="form-validation-alert" class="alert alert-danger mt-3 py-2 px-3 small d-none"></div>
+
+              <div class="mt-4 pt-3 border-top border-secondary border-opacity-25 d-flex gap-2">
+                <button type="submit" class="btn btn-primary-custom px-4" id="btn-submit-booking">
+                  <span class="spinner-border spinner-border-sm me-1 d-none" id="booking-spinner"></span>
+                  <i class="bi bi-check2-circle me-1"></i> Confirm & Book Time-Slot
+                </button>
+                <button type="reset" class="btn btn-outline-custom">Reset Form</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Right: Hardware Live Preview & Fair Use Rules -->
+        <div class="col-lg-4">
+          <div class="preview-spec-card">
+            <h2 class="h6 fw-bold text-white mb-3">
+              <i class="bi bi-gpu-card text-info me-2"></i>Selected Workstation Specs
+            </h2>
+            <div id="preview-specs-body">
+              <p class="text-muted small">Please select a workstation from the dropdown to preview hardware specs.</p>
+            </div>
+
+            <hr class="border-secondary border-opacity-25 my-3">
+
+            <h3 class="h6 fw-bold text-warning mb-2">
+              <i class="bi bi-shield-exclamation me-1"></i> Fair-Share Lab Rules
+            </h3>
+            <ul class="text-secondary small ps-3 mb-0">
+              <li><strong>Max 2 Hours:</strong> Single session limit.</li>
+              <li><strong>1 Booking/Day:</strong> Per student roll number.</li>
+              <li><strong>Physical Attendance:</strong> Lab assistant checks you in at desk.</li>
+              <li><strong>Zero Overlaps:</strong> Overlapping slots automatically rejected.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 3: ACTIVE QUEUE & SCHEDULE
+         ==================================================================== -->
+    <section id="section-bookings" class="app-section d-none">
+      <div class="section-banner mb-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <h1 class="page-title"><i class="bi bi-journal-text text-primary me-2"></i>Active Reservations Queue</h1>
+            <p class="page-subtitle">Track scheduled slots, confirmed bookings, and ongoing model training sessions.</p>
+          </div>
+          <button class="btn btn-primary-custom btn-sm" onclick="navigateToSection('reserve')">
+            <i class="bi bi-calendar-plus me-1"></i> New Reservation
+          </button>
+        </div>
+      </div>
+
+      <div class="table-custom-container">
+        <div class="table-responsive">
+          <table class="table table-custom mb-0">
+            <thead>
+              <tr>
+                <th>Booking ID</th>
+                <th>Student Info</th>
+                <th>Workstation</th>
+                <th>Date & Time</th>
+                <th>Project & Framework</th>
+                <th>Status</th>
+                <th class="text-end">Action</th>
+              </tr>
+            </thead>
+            <tbody id="student-bookings-table-body">
+              <!-- Dynamically rendered -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 4: LAB ASSISTANT DESK
+         ==================================================================== -->
+    <section id="section-assistant" class="app-section d-none">
+      <div class="section-banner mb-3">
+        <h1 class="page-title"><i class="bi bi-shield-check text-warning me-2"></i>Lab Assistant Management Desk</h1>
+        <p class="page-subtitle">Verify student physical attendance upon entry, check in active sessions, release completed jobs, and manage hardware maintenance.</p>
+      </div>
+
+      <!-- Live Check-In Desk Table -->
+      <div class="mb-5">
+        <h2 class="h5 fw-bold text-white mb-3">
+          <i class="bi bi-person-check text-success me-2"></i>Live Student Arrival Check-In Desk
+        </h2>
+        <div class="table-custom-container">
+          <div class="table-responsive">
+            <table class="table table-custom mb-0">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Student Info</th>
+                  <th>Workstation</th>
+                  <th>Time Slot</th>
+                  <th>Project / Framework</th>
+                  <th>Session State</th>
+                  <th>Check-In Time</th>
+                  <th class="text-end">Desk Controls</th>
+                </tr>
+              </thead>
+              <tbody id="assistant-desk-table-body">
+                <!-- Dynamically rendered -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hardware Maintenance Switchboard -->
+      <div>
+        <h2 class="h5 fw-bold text-white mb-3">
+          <i class="bi bi-tools text-info me-2"></i>Hardware Maintenance Switchboard
+        </h2>
+        <div class="table-custom-container">
+          <div class="table-responsive">
+            <table class="table table-custom mb-0">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Workstation</th>
+                  <th>GPU Hardware</th>
+                  <th>Location</th>
+                  <th>Current State</th>
+                  <th class="text-end">Maintenance Toggle</th>
+                </tr>
+              </thead>
+              <tbody id="assistant-maintenance-table-body">
+                <!-- Dynamically rendered -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- WORKSTATION DETAILS MODAL -->
+  <div class="modal fade" id="workstationDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content modal-content-dark">
+        <div class="modal-header modal-header-dark">
+          <h2 class="modal-title h5 fw-bold" id="wsDetailsModalTitle">Hardware Specifications</h2>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4" id="wsDetailsModalBody"></div>
+        <div class="modal-footer modal-footer-dark">
+          <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary-custom" id="btn-reserve-from-details">Reserve This Workstation</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RELEASE MODAL (FOR LAB ASSISTANT) -->
+  <div class="modal fade" id="releaseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content modal-content-dark">
+        <div class="modal-header modal-header-dark">
+          <h2 class="modal-title h5 fw-bold text-success">
+            <i class="bi bi-box-arrow-right me-2"></i>Release Workstation Session
+          </h2>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <p class="text-secondary small mb-3">
+            Releasing this session marks the booking as <strong>COMPLETED</strong> and restores the GPU workstation state back to <strong>AVAILABLE</strong>.
+          </p>
+          <input type="hidden" id="release-booking-id">
+          <div class="mb-3">
+            <label for="release-notes" class="form-label small fw-semibold text-secondary">Assistant Inspection Notes (Optional)</label>
+            <textarea class="form-control form-control-dark" id="release-notes" rows="3" placeholder="e.g. Training job completed properly; GPU thermals and memory verified normal."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer modal-footer-dark">
+          <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-success" id="btn-confirm-release">Confirm Release</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container-custom" id="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="footer-custom text-center">
+    <div class="container">
+      <p class="mb-1 fw-semibold text-white">AI Lab GPU & Workstation Time-Slot Reservation System</p>
+      <p class="mb-0 text-secondary small">
+        High-Performance Compute Scheduling &bull; Dual-Screen Laptop & Mobile Responsive Architecture
+      </p>
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5 Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>

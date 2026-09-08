@@ -1,0 +1,220 @@
+{
+  "info": {
+    "_postman_id": "ai-lab-gpu-reservation-tests",
+    "name": "AI Lab GPU Workstation Reservation API Tests",
+    "description": "Comprehensive test suite covering all 13 test scenarios for the AI Lab GPU & Workstation Time-Slot Reservation System.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. View All Workstations",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/workstations",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "workstations"]
+        }
+      }
+    },
+    {
+      "name": "2. View One Workstation (ID: 1)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/workstations/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "workstations", "1"]
+        }
+      }
+    },
+    {
+      "name": "3. Create Valid Reservation (2 Hours)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"rollNumber\": \"AI2024-099\",\n  \"studentName\": \"Ananya Sen\",\n  \"email\": \"ananya.sen@college.edu\",\n  \"workstationId\": 1,\n  \"bookingDate\": \"2026-09-08\",\n  \"startTime\": \"13:00:00\",\n  \"endTime\": \"15:00:00\",\n  \"projectTitle\": \"Diffusion Model Audio Synthesis\",\n  \"modelFramework\": \"PyTorch + TorchAudio\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/bookings",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "bookings"]
+        }
+      }
+    },
+    {
+      "name": "4. Reject Missing Student Info (400 Bad Request)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"rollNumber\": \"\",\n  \"studentName\": \"\",\n  \"email\": \"invalid-email\",\n  \"workstationId\": 1,\n  \"bookingDate\": \"2026-09-08\",\n  \"startTime\": \"13:00:00\",\n  \"endTime\": \"15:00:00\",\n  \"projectTitle\": \"\",\n  \"modelFramework\": \"\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/bookings",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "bookings"]
+        }
+      }
+    },
+    {
+      "name": "5. Reject Invalid Time (Start >= End) (400)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"rollNumber\": \"AI2024-088\",\n  \"studentName\": \"Test User\",\n  \"email\": \"test@college.edu\",\n  \"workstationId\": 1,\n  \"bookingDate\": \"2026-09-08\",\n  \"startTime\": \"15:00:00\",\n  \"endTime\": \"14:00:00\",\n  \"projectTitle\": \"Invalid Time Test\",\n  \"modelFramework\": \"PyTorch\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/bookings",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "bookings"]
+        }
+      }
+    },
+    {
+      "name": "6. Reject Reservation Longer Than 2 Hours (400)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"rollNumber\": \"AI2024-088\",\n  \"studentName\": \"Test User\",\n  \"email\": \"test@college.edu\",\n  \"workstationId\": 2,\n  \"bookingDate\": \"2026-09-08\",\n  \"startTime\": \"09:00:00\",\n  \"endTime\": \"13:00:00\",\n  \"projectTitle\": \"4-Hour Monopolization Attempt\",\n  \"modelFramework\": \"PyTorch\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/bookings",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "bookings"]
+        }
+      }
+    },
+    {
+      "name": "7. Reject Overlapping Reservation (409 Conflict)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"rollNumber\": \"AI2024-077\",\n  \"studentName\": \"Conflict Student\",\n  \"email\": \"conflict@college.edu\",\n  \"workstationId\": 1,\n  \"bookingDate\": \"2026-09-08\",\n  \"startTime\": \"14:00:00\",\n  \"endTime\": \"16:00:00\",\n  \"projectTitle\": \"Overlapping Slot\",\n  \"modelFramework\": \"TensorFlow\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/bookings",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "bookings"]
+        }
+      }
+    },
+    {
+      "name": "8. Reject Second Active Reservation Same Student Same Day (409)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"rollNumber\": \"AI2024-099\",\n  \"studentName\": \"Ananya Sen\",\n  \"email\": \"ananya.sen@college.edu\",\n  \"workstationId\": 4,\n  \"bookingDate\": \"2026-09-08\",\n  \"startTime\": \"16:00:00\",\n  \"endTime\": \"18:00:00\",\n  \"projectTitle\": \"Second Booking Attempt\",\n  \"modelFramework\": \"PyTorch\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/bookings",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "bookings"]
+        }
+      }
+    },
+    {
+      "name": "9. Lab Assistant Check-In Reservation (200 OK)",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/bookings/1/checkin",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "bookings", "1", "checkin"]
+        }
+      }
+    },
+    {
+      "name": "10. Lab Assistant Release Workstation (200 OK)",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"assistantNotes\": \"Session completed properly. Hardware verified.\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/bookings/1/release",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "bookings", "1", "release"]
+        }
+      }
+    },
+    {
+      "name": "11. Cancel Reservation (200 OK)",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/bookings/3",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "bookings", "3"]
+        }
+      }
+    },
+    {
+      "name": "12. Handle Non-Existent Workstation (404 Not Found)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/workstations/9999",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "workstations", "9999"]
+        }
+      }
+    },
+    {
+      "name": "13. Handle Non-Existent Booking (404 Not Found)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/bookings/9999",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "bookings", "9999"]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "ai-lab-reservation-frontend",
+  "version": "1.0.0",
+  "description": "AI Lab GPU & Workstation Time-Slot Reservation System Frontend",
+  "scripts": {
+    "start": "npx -y serve -l 5500",
+    "dev": "npx -y serve -l 5500"
+  }
+}

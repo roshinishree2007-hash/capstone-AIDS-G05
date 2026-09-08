@@ -1,0 +1,4 @@
+"Architecture Tier","Technologies Used","Default Port / Host","Tier Responsibilities"
+"Tier 1: Presentation Layer","HTML5, CSS3, Bootstrap 5, Vanilla JS, Fetch API","http://localhost:5500","Workstation grid, dedicated reservation studio, active queue, lab assistant desk, client validation, mobile responsiveness."
+"Tier 2: Application Layer","Java 17+, Spring Boot 3.2, Spring Web, Spring Data JPA","http://localhost:8080","REST endpoints, 10 business rules enforcement, conflict detection, transaction management, global JSON exception advice."
+"Tier 3: Data Tier","MySQL 8.0, InnoDB Storage Engine","localhost:3306 (ai_lab_reservation)","Normalized tables (students, workstations, lab_bookings), relational constraints, foreign keys, composite indexes."
